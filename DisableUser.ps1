@@ -18,7 +18,6 @@ if(Test-Path -Path $PreferenceDirectory)
     else
     {
         $SearchBase = Get-Content -Path $PreferenceDirectory
-        Write-Host $SearchBase
     }
 }
 else
@@ -43,6 +42,25 @@ $Server = Read-Host "Please enter your DC Hostname"
 
 $cred = Get-Credential
 
-$User = Get-ADUser -Server $Server -Credential $cred -SearchBase $SearchBase -Filter {DisplayName -like $SearchWild}
-
-Write-Host $User
+$User = Get-ADUser -Server $Server -Credential $cred -SearchBase $SearchBase -Properties DisplayName -Filter {DisplayName -like $SearchWild}
+#Logic for User count based on search critera and user picks which one.
+if($User.Count -gt 1) {
+    $i = 0
+    Write-Host "Please select a user from the list below."
+    foreach ($u in $User){
+        $str = "[" + ($i++).ToString() + "]" + $u.DisplayName.ToString()
+        Write-Host $str
+    }    
+    $Selection = Read-Host "Selection"
+    if(($Selection -ge ($User.Count)) -or ([int]$Selection -lt 0)){
+        Write-Host "Invalid Selection."
+        return
+    }
+}
+elseif($User.Count -eq 0)
+{
+    Write-Host "NO USER FOUND..."
+}
+else{
+    Write-Host "Disabling..."
+}
