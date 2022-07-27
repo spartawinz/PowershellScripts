@@ -1,6 +1,8 @@
 ﻿#REQUIRES -modules ActiveDirectory
 #default save directory
 $PreferenceDirectory = $env:AppData + "\DU\Settings.pref"
+#Default Disabled OU
+$DisabledDirectory = "<DISABLED OU>"
 
 Function DisableUser{
     [CmdletBinding()]
@@ -9,9 +11,12 @@ Function DisableUser{
     )
     
     foreach ($group in $Sel.MemberOf){
-        Remove-ADGroupMember -Identity $group -Members $Sel 
+        Remove-ADGroupMember -Identity $group -Members $Sel -Confirm:$false
     }
-    Disable-ADAccount -Identity $Sel 
+    
+    Set-ADUser -Identity $Sel -Clear Company -Credential $cred
+    Disable-ADAccount -Identity $Sel
+    Move-ADObject -Identity $Sel -Server $Server -Credential $cred -TargetPath $DisabledDirectory
 }
 
 Write-Host "This program will connect to your AD forest and do the following: `nDisable the user.`nStrip group access.`nRemove Company attribute."
@@ -22,7 +27,7 @@ $SearchWild = "*"+$Search+"*"
 #If File exists
 if(Test-Path -Path $PreferenceDirectory)
 { 
-    $Selection = Read-Host "Would you like to use your saved selection?(Y/N)"
+    $Selection = Read-Host "Would you like to use your saved Search Base selection?(Y/N)"
     if(( $Selection -notlike "y" ) -and ($Selection -ne ""))
     {
         $SearchBase = Read-Host "Please enter your SearchBase"
@@ -52,10 +57,10 @@ if($SaveFlag -like "y")
 }
 
 $Server = Read-Host "Please enter your DC Hostname"
-
+    
 $cred = Get-Credential
 
-$User = Get-ADUser -Server $Server -Credential $cred -SearchBase $SearchBase -Properties DisplayName,DistinguishedName,MemberOf -Filter {DisplayName -like $SearchWild}
+$User = Get-ADUser -Server $Server -Credential $cred -SearchBase $SearchBase -Properties DisplayName,DistinguishedName,MemberOf,Company -Filter {DisplayName -like $SearchWild}
 #Logic for User count based on search critera and user picks which one.
 if($User.Count -gt 1) {
     $i = 0
