@@ -22,7 +22,7 @@ Function DisableUser{
     }
     
     Set-ADUser -Identity $Sel -Clear Company -Credential $cred
-    Disable-ADAccount -Identity $Sel
+    Disable-ADAccount -Identity $Sel -Credential $cred
     Move-ADObject -Identity $Sel -Server $Server -Credential $cred -TargetPath $DisabledDirectory
 }
 
