@@ -1,8 +1,15 @@
 ﻿#REQUIRES -modules ActiveDirectory
 #default save directory
 $PreferenceDirectory = $env:AppData + "\DU\Settings.pref"
-#Default Disabled OU
-$DisabledDirectory = "<DISABLED OU>"
+#generates blank preference list if it doesn't exist
+if (-Not(Test-Path -Path $PreferenceDirectory)){
+    $emptyList = @([string]"",[string]"",[string]"")
+    New-Item -ItemType File -Path $PreferenceDirectory -UseTransaction:$false 
+    Out-File -FilePath $PreferenceDirectory -InputObject $emptyList
+}
+$Preferences = (Get-Content -Path $PreferenceDirectory)
+
+
 
 Function DisableUser{
     [CmdletBinding()]
@@ -24,40 +31,94 @@ Write-Host "This program will connect to your AD forest and do the following: `n
 $Search = Read-Host "Please enter the persons name to search for"
 #converts Search criteria into fuzzy search
 $SearchWild = "*"+$Search+"*"
-#If File exists
-if(Test-Path -Path $PreferenceDirectory)
+#If File exists and preference exists
+if((Test-Path -Path $PreferenceDirectory) -and !([string]::IsNullOrEmpty($Preferences['SearchBase'])))
 { 
     $Selection = Read-Host "Would you like to use your saved Search Base selection?(Y/N)"
     if(( $Selection -notlike "y" ) -and ($Selection -ne ""))
     {
-        $SearchBase = Read-Host "Please enter your SearchBase"
+        $SearchBase = [string](Read-Host "Please enter your SearchBase")
         $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
     }
     else
     {
-        $SearchBase = Get-Content -Path $PreferenceDirectory
+        $SearchBase = $Preferences[0]
     }
+    
 }
 else
 {
-    $SearchBase = Read-Host "Please enter your SearchBase"
+    $SearchBase = [string](Read-Host "Please enter your SearchBase")
     $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
 }
 #saves to file in preference directory
 if($SaveFlag -like "y")
 {
+    $SaveFlag = $false
     if(Test-Path -Path $PreferenceDirectory)
     {
-        Out-File -FilePath $PreferenceDirectory -InputObject $SearchBase
+        $Preferences[0]=$SearchBase
+        Out-File -FilePath $PreferenceDirectory -InputObject $Preferences
     }
-    else
+    
+}
+
+#$Server = Read-Host "Please enter your DC Hostname"
+
+if((Test-Path -Path $PreferenceDirectory) -and !([string]::IsNullOrEmpty($Preferences['Server'])))
+{ 
+    $Selection = Read-Host "Would you like to use your saved DC selection?(Y/N)"
+    if(( $Selection -notlike "y" ) -and ($Selection -ne ""))
     {
-        New-Item -Path $PreferenceDirectory -Force -Value $SearchBase
+        $Server = Read-Host "Please enter your DC Hostname"
+        $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
+    }
+    else{
+        $Server = $Preferences[1]
+    }
+    
+}
+else
+{
+    $Server = Read-Host "Please enter your DC Hostname"
+    $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
+}
+if($SaveFlag -like "y")
+{
+    $SaveFlag = $false
+    if(Test-Path -Path $PreferenceDirectory)
+    {
+        $Preferences[1] = $Server
+        Out-File -FilePath $PreferenceDirectory -InputObject $Preferences
     }
 }
 
-$Server = Read-Host "Please enter your DC Hostname"
-    
+#$DisabledDirectory = Read-Host "Please enter your disabled Distinguished Name"
+
+if((Test-Path -Path $PreferenceDirectory) -and !([string]::IsNullOrEmpty($Preferences['DisabledDirectory']))){ 
+    $Selection = Read-Host "Would you like to use your saved disabled directory selection?(Y/N)"
+    if(( $Selection -notlike "y" ) -and ($Selection -ne ""))
+    {
+        $DisabledDirectory = Read-Host "Please enter your disabled Distinguished Name"
+        $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
+    }
+
+}
+else
+{
+    $DisabledDirectory = Read-Host "Please enter your disabled user OU Distinguished Name"
+    $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
+}
+if($SaveFlag -like "y")
+{
+    $SaveFlag = $false
+    if(Test-Path -Path $PreferenceDirectory)
+    {
+        $Preferences[2] = $DisabledDirectory
+        Out-File -FilePath $PreferenceDirectory -InputObject $Preferences
+    }
+}
+
 $cred = Get-Credential
 
 $User = Get-ADUser -Server $Server -Credential $cred -SearchBase $SearchBase -Properties DisplayName,DistinguishedName,MemberOf,Company -Filter {DisplayName -like $SearchWild}
