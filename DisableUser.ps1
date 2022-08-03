@@ -1,5 +1,5 @@
 ﻿#REQUIRES -modules ActiveDirectory
-#The "encryption" used in this program is just to obscure the preferences since it holds dc and domain information
+#The "encryption" used in this program is just to obscure the preferences since it holds dc and domain information and should not be trusted as secure
 #default save directory
 $PreferenceDirectory = $env:AppData + "\DU\Settings.pref"
 #generates empty hash table
