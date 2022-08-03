@@ -25,7 +25,7 @@ Function Encrypt{
         [string]$str
     )
     $output = ConvertTo-SecureString -String $str -AsPlainText -Force | ConvertFrom-SecureString
-    Write-Host $output
+    
     return $output
 }
 
@@ -75,7 +75,6 @@ Function convertHashToString{
             
         }
     }
-    Write-Host $newstr
     return $newstr
 }
 
