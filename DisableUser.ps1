@@ -16,6 +16,7 @@ Function DisableUser{
     }
     
     Set-ADUser -Identity $Sel -Clear Company -Credential $cred
+    Set-ADUser -Identity $Sel -Clear ipphone -Credential $cred
     Disable-ADAccount -Identity $Sel -Credential $cred
     Move-ADObject -Identity $Sel -Server $Server -Credential $cred -TargetPath $DisabledDirectory
 }
@@ -214,7 +215,7 @@ if($Cred -eq $null){
     $cred = Get-Credential
 }
 
-$User = Get-ADUser -Server $Server -Credential $cred -SearchBase $SearchBase -Properties DisplayName,DistinguishedName,MemberOf,Company -Filter {DisplayName -like $SearchWild}
+$User = Get-ADUser -Server $Server -Credential $cred -SearchBase $SearchBase -Properties DisplayName,DistinguishedName,MemberOf,Company,ipphone -Filter {DisplayName -like $SearchWild}
 #Logic for User count based on search critera and user picks which one.
 if($User.Count -gt 1) {
     $i = 0
