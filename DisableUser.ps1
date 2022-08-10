@@ -115,130 +115,148 @@ $Preferences = updatePreferences -Path $PreferenceDirectory
 
 Write-Host "This program will connect to your AD forest and do the following: `nDisable the user.`nStrip group access.`nRemove Company attribute."
 
-$Search = Read-Host "Please enter the persons name to search for"
-#converts Search criteria into fuzzy search
-$SearchWild = "*"+$Search+"*"
+$choice = Read-Host "Would you like to Disable a User?(Y/N)"
 
-#Start Search Base Logic
-#If File exists and preference exists
-if((Test-Path -Path $PreferenceDirectory) -and !([string]::IsNullOrEmpty($Preferences.Item('SearchBase')))){ 
-    $Selection = Read-Host "Would you like to use your saved Search Base selection?(Y/N)"
-    if(( $Selection -notlike "y" ) -and ($Selection -ne ""))
-    {
-        $SearchBase = Read-Host "Please enter your SearchBase"
-        $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
+if(($choice -like "y") -or ($choice -like "")){
+    $Search = Read-Host "Please enter the persons name to search for"
+    #converts Search criteria into fuzzy search
+    $SearchWild = "*"+$Search+"*"
+
+    #Start Search Base Logic
+    #If File exists and preference exists
+    if((Test-Path -Path $PreferenceDirectory) -and !([string]::IsNullOrEmpty($Preferences.Item('SearchBase')))){ 
+        $Selection = Read-Host "Would you like to use your saved Search Base selection?(Y/N)"
+        if(( $Selection -notlike "y" ) -and ($Selection -ne ""))
+        {
+            $SearchBase = Read-Host "Please enter your SearchBase"
+            $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
+        }
+        else
+        {
+            $SearchBase = $Preferences.Item('SearchBase')
+        }
+    
     }
     else
     {
-        $SearchBase = $Preferences.Item('SearchBase')
+        $SearchBase = Read-Host "Please enter your SearchBase" 
+        $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
     }
-    
-}
-else
-{
-    $SearchBase = Read-Host "Please enter your SearchBase" 
-    $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
-}
-#saves to file in preference directory
-if($SaveFlag -like "y")
-{
-    $SaveFlag = "n"
-    if(Test-Path -Path $PreferenceDirectory)
+    #saves to file in preference directory
+    if($SaveFlag -like "y")
     {
-        $Preferences.Item('SearchBase') = $SearchBase
-        SaveFile -Path $PreferenceDirectory -File $Preferences
-    }
+        $SaveFlag = "n"
+        if(Test-Path -Path $PreferenceDirectory)
+        {
+            $Preferences.Item('SearchBase') = $SearchBase
+            SaveFile -Path $PreferenceDirectory -File $Preferences
+        }
     
-}
-#Start DC Server Logic
-#$Server = Read-Host "Please enter your DC Hostname"
+    }
+    #Start DC Server Logic
+    #$Server = Read-Host "Please enter your DC Hostname"
 
-if((Test-Path -Path $PreferenceDirectory) -and !([string]::IsNullOrEmpty($Preferences.Item('Server')))){ 
-    $Selection = Read-Host "Would you like to use your saved DC selection?(Y/N)"
-    if(( $Selection -notlike "y" ) -and ($Selection -ne ""))
+    if((Test-Path -Path $PreferenceDirectory) -and !([string]::IsNullOrEmpty($Preferences.Item('Server')))){ 
+        $Selection = Read-Host "Would you like to use your saved DC selection?(Y/N)"
+        if(( $Selection -notlike "y" ) -and ($Selection -ne ""))
+        {
+            $Server = Read-Host "Please enter your DC Hostname" 
+            $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
+        }
+        else{
+            $Server = $Preferences.Item('Server')
+        }
+    
+    }
+    else
     {
         $Server = Read-Host "Please enter your DC Hostname" 
         $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
     }
-    else{
-        $Server = $Preferences.Item('Server')
-    }
-    
-}
-else
-{
-    $Server = Read-Host "Please enter your DC Hostname" 
-    $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
-}
-if($SaveFlag -like "y")
-{
-    $SaveFlag = "n"
-    if(Test-Path -Path $PreferenceDirectory)
+    if($SaveFlag -like "y")
     {
+        $SaveFlag = "n"
+        if(Test-Path -Path $PreferenceDirectory)
+        {
         
-        $Preferences.Item('Server') = $Server
-        SaveFile -Path $PreferenceDirectory -File $Preferences
+            $Preferences.Item('Server') = $Server
+            SaveFile -Path $PreferenceDirectory -File $Preferences
+        }
     }
-}
-#Start Disabled Directory Logic
-#$DisabledDirectory = Read-Host "Please enter your disabled Distinguished Name"
+    #Start Disabled Directory Logic
+    #$DisabledDirectory = Read-Host "Please enter your disabled Distinguished Name"
 
-if((Test-Path -Path $PreferenceDirectory) -and !([string]::IsNullOrEmpty($Preferences.Item('DisabledDirectory')))){ 
-    $Selection = Read-Host "Would you like to use your saved disabled directory selection?(Y/N)"
-    if(( $Selection -notlike "y" ) -and ($Selection -ne ""))
+    if((Test-Path -Path $PreferenceDirectory) -and !([string]::IsNullOrEmpty($Preferences.Item('DisabledDirectory')))){ 
+        $Selection = Read-Host "Would you like to use your saved disabled directory selection?(Y/N)"
+        if(( $Selection -notlike "y" ) -and ($Selection -ne ""))
+        {
+            $DisabledDirectory = Read-Host "Please enter your disabled Distinguished Name" 
+            $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
+        }
+        else{
+            $DisabledDirectory = $Preferences.Item('DisabledDirectory')
+        }
+
+    }
+    else
     {
-        $DisabledDirectory = Read-Host "Please enter your disabled Distinguished Name" 
+        $DisabledDirectory = Read-Host "Please enter your disabled user OU Distinguished Name" 
         $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
     }
-    else{
-        $DisabledDirectory = $Preferences.Item('DisabledDirectory')
-    }
-
-}
-else
-{
-    $DisabledDirectory = Read-Host "Please enter your disabled user OU Distinguished Name" 
-    $SaveFlag = Read-Host "Would you like to save this selection?(Y/N)"
-}
-if($SaveFlag -like "y")
-{
-    $SaveFlag = "n"
-    if(Test-Path -Path $PreferenceDirectory)
+    if($SaveFlag -like "y")
     {
+        $SaveFlag = "n"
+        if(Test-Path -Path $PreferenceDirectory)
+        {
         
-        $Preferences.Item('DisabledDirectory') = $DisabledDirectory
-        SaveFile -Path $PreferenceDirectory -File $Preferences
+            $Preferences.Item('DisabledDirectory') = $DisabledDirectory
+            SaveFile -Path $PreferenceDirectory -File $Preferences
+        }
     }
-}
 
-if($Cred -eq $null){
-    $cred = Get-Credential
-}
+    if($Cred -eq $null){
+        $cred = Get-Credential
+    }
 
-$User = Get-ADUser -Server $Server -Credential $cred -SearchBase $SearchBase -Properties DisplayName,DistinguishedName,MemberOf,Company,ipphone -Filter {DisplayName -like $SearchWild}
-#Logic for User count based on search critera and user picks which one.
-if($User.Count -gt 1) {
-    $i = 0
-    Write-Host "Please select a user from the list below."
-    foreach ($u in $User){
-        $str = "[" + [string]($i++) + "]" + [string]$u.DisplayName
-        Write-Host $str
-    }    
-    $Selection = Read-Host "Selection"
-    if(([int]$Selection -ge ($User.Count)) -or ([int]$Selection -lt 0)){
-        Write-Host "Invalid Selection."
-        return
+    $User = Get-ADUser -Server $Server -Credential $cred -SearchBase $SearchBase -Properties DisplayName,DistinguishedName,MemberOf,Company,ipphone -Filter {DisplayName -like $SearchWild}
+    #Logic for User count based on search critera and user picks which one.
+    if($User.Count -gt 1) {
+        $i = 0
+        Write-Host "Please select a user from the list below."
+        foreach ($u in $User){
+            $str = "[" + [string]($i++) + "]" + [string]$u.DisplayName
+            Write-Host $str
+        }    
+        $Selection = Read-Host "Selection"
+        if(([int]$Selection -ge ($User.Count)) -or ([int]$Selection -lt 0)){
+            Write-Host "Invalid Selection."
+            return
+        }
+        else{
+            DisableUser -Sel $User.Get($Selection)
+        }
+    }
+    elseif($User.Count -eq 0)
+    {
+        Write-Host "NO USER FOUND..."
     }
     else{
-        DisableUser -Sel $User.Get($Selection)
+        $outstring = "Are you sure you want to disable " + $User.DisplayName + " ?(Y/N)"
+        $choice = Read-Host $outstring
+    
+        if(($choice -like "y") -or ($choice -like "")){
+            DisableUser -Sel $User
+        }
+        else{
+            Write-Host "ABORTED."
+        }
     }
-}
-elseif($User.Count -eq 0)
-{
-    Write-Host "NO USER FOUND..."
+    Invoke-Expression -Command $PSCommandPath
 }
 else{
-    DisableUser -Sel $User
-
+    return
 }
+
+
+
 
