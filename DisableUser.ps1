@@ -214,7 +214,7 @@ if(($choice -like "y") -or ($choice -like "")){
         }
     }
 
-    if($Cred -eq $null){
+    if($cred -eq $null){
         $cred = Get-Credential
     }
 
