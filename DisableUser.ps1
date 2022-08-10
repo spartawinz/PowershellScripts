@@ -1,4 +1,5 @@
 ﻿#REQUIRES -modules ActiveDirectory
+#THIS SCRIPT WILL ONLY WORK ON POWERSHELL 7 IT WILL NOT WORK ON THE BASE POWERSHELL
 #The "encryption" used in this program is just to obscure the preferences since it holds dc and domain information and should not be trusted as secure
 #default save directory
 $PreferenceDirectory = $env:AppData + "\DU\Settings.pref"
